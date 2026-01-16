@@ -1,24 +1,13 @@
-//
-//  ContentView.swift
-//  5SecondRule_v4
-//
-//  Created by Rohan George on 1/15/26.
-//
-
 import SwiftUI
+import Combine
 
 struct ContentView: View {
-    var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
-    }
-}
+    @StateObject private var store = AppStore()
 
-#Preview {
-    ContentView()
+    var body: some View {
+        NavigationStack {
+            DecksView()
+                .environmentObject(store)
+        }
+    }
 }
