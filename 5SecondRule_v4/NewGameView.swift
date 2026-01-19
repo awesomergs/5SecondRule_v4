@@ -5,8 +5,8 @@ struct NewGameView: View {
 
     @State private var playerName: String = ""
     @State private var players: [String] = []
+    
 
-    // game length ~ NEED TO FIX HOW ROUNDS WORK (rn each q = a round, need to have each round have 1 q pp)
     private let roundOptions = [5, 10, 15]
     @State private var selectedRounds: Int = 10
     
@@ -99,6 +99,12 @@ struct NewGameView: View {
                     .disabled(players.isEmpty)
             }
         }
+        .onAppear {
+            if players.isEmpty {
+                players = store.savedPlayers
+            }
+        }
+
     }
 
     private func addPlayer() {
@@ -107,6 +113,7 @@ struct NewGameView: View {
         guard !players.contains(cleaned) else { playerName = ""; return }
 
         players.append(cleaned)
+        store.addPlayer(cleaned)
         playerName = ""
     }
 }

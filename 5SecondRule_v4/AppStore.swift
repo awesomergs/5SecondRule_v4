@@ -6,9 +6,13 @@ import Combine
 final class AppStore: ObservableObject {
     @Published var decks: [Deck] = Deck.sample
     @Published var leaderboard: [String: Int] = [:]   // playerName -> totalWins/points
+    
+    @Published var savedPlayers: [String] = []
+    private let playersKey = "saved_players_v1"
 
     init() {
         loadLeaderboard()
+        loadPlayers()
     }
 
     func startNewGame(players: [String], roundsPerPlayer: Int) -> GameState {
@@ -28,7 +32,27 @@ final class AppStore: ObservableObject {
             scores: initialScores
         )
     }
+    
+    func addPlayer(_ name: String) {
+            guard !savedPlayers.contains(name) else { return }
+            savedPlayers.append(name)
+            savePlayers()
+        }
 
+        func removePlayer(_ name: String) {
+            savedPlayers.removeAll { $0 == name }
+            savePlayers()
+        }
+
+        private func savePlayers() {
+            UserDefaults.standard.set(savedPlayers, forKey: playersKey)
+        }
+
+        private func loadPlayers() {
+            if let stored = UserDefaults.standard.array(forKey: playersKey) as? [String] {
+                savedPlayers = stored
+            }
+        }
 
 
     func awardPoint(to player: String) {
