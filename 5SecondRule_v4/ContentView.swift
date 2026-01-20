@@ -6,8 +6,11 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack {
-            DecksView()
+            HomeView()
                 .environmentObject(store)
         }
     }
+}
+#Preview {
+    ContentView()
 }

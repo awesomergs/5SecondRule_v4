@@ -24,23 +24,23 @@ struct DecksView: View {
                 }
             }
 
-            Section {
-                NavigationLink {
-                    NewGameView()
-                        .environmentObject(store)
-                } label: {
-                    HStack {
-                        Image(systemName: "play.circle.fill")
-                        Text("Start New Game")
-                    }
-                    .font(.headline)
-                }
-                .disabled(store.decks.allSatisfy { !$0.isEnabled })
-            } footer: {
-                if store.decks.allSatisfy({ !$0.isEnabled }) {
-                    Text("Turn on at least one deck to start a game.")
-                }
-            }
+//            Section {
+//                NavigationLink {
+//                    NewGameView()
+//                        .environmentObject(store)
+//                } label: {
+//                    HStack {
+//                        Image(systemName: "play.circle.fill")
+//                        Text("Start New Game")
+//                    }
+//                    .font(.headline)
+//                }
+//                .disabled(store.decks.allSatisfy { !$0.isEnabled })
+//            } footer: {
+//                if store.decks.allSatisfy({ !$0.isEnabled }) {
+//                    Text("Turn on at least one deck to start a game.")
+//                }
+//            }
 
 //            Section("Leaderboard") {
 //                NavigationLink("View Leaderboard") {

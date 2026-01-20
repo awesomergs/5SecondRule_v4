@@ -9,6 +9,8 @@ final class AppStore: ObservableObject {
     
     @Published var savedPlayers: [String] = []
     private let playersKey = "saved_players_v1"
+    
+    @Published var roundsPerPlayer: Int = 7
 
     init() {
         loadLeaderboard()
