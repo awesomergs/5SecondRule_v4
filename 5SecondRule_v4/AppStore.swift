@@ -11,6 +11,12 @@ final class AppStore: ObservableObject {
     private let playersKey = "saved_players_v1"
     
     @Published var roundsPerPlayer: Int = 7
+    
+    @Published var playerProfiles: [PlayerProfile] = []
+    @Published var activePlayers: [PlayerProfile] = []
+
+    private let profilesKey = "player_profiles_v1"
+
 
     init() {
         loadLeaderboard()
@@ -80,4 +86,45 @@ final class AppStore: ObservableObject {
 
         leaderboard = decoded
     }
+    
+    func loadProfiles() {
+        guard
+            let data = UserDefaults.standard.data(forKey: profilesKey),
+            let decoded = try? JSONDecoder().decode([PlayerProfile].self, from: data)
+        else { return }
+
+        playerProfiles = decoded
+    }
+
+    func saveProfiles() {
+        if let data = try? JSONEncoder().encode(playerProfiles) {
+            UserDefaults.standard.set(data, forKey: profilesKey)
+        }
+    }
+    
+    func addProfile(_ profile: PlayerProfile) {
+        playerProfiles.append(profile)
+        saveProfiles()
+    }
+
+    func removeProfile(_ profile: PlayerProfile) {
+        playerProfiles.removeAll { $0.id == profile.id }
+        activePlayers.removeAll { $0.id == profile.id }
+        saveProfiles()
+    }
+
+    
+    func activatePlayer(_ profile: PlayerProfile) {
+        guard !activePlayers.contains(profile) else { return }
+        activePlayers.append(profile)
+    }
+
+    func deactivatePlayer(_ profile: PlayerProfile) {
+        activePlayers.removeAll { $0.id == profile.id }
+    }
+
+    func clearActivePlayers() {
+        activePlayers.removeAll()
+    }
+
 }

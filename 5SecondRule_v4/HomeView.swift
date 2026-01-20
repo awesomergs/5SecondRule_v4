@@ -2,7 +2,6 @@ import SwiftUI
 
 struct HomeView: View {
     @EnvironmentObject private var store: AppStore
-    @State private var players: [String] = []
 
     private enum RoundChoice: String, CaseIterable, Identifiable {
         case three = "3"
@@ -29,6 +28,7 @@ struct HomeView: View {
 
     var body: some View {
         List {
+
             // MARK: - Game Length
             Section("Game Length") {
                 Picker("Rounds per player", selection: $roundChoice) {
@@ -48,7 +48,7 @@ struct HomeView: View {
             // MARK: - Navigation
             Section {
                 NavigationLink {
-                    PlayersView(players: $players)
+                    PlayerProfilesView()
                         .environmentObject(store)
                 } label: {
                     Label("Players", systemImage: "person.2.fill")
@@ -67,7 +67,7 @@ struct HomeView: View {
                 NavigationLink {
                     GameView(
                         initialState: store.startNewGame(
-                            players: players,
+                            players: store.activePlayers.map { $0.name },
                             roundsPerPlayer: resolvedRounds ?? 7
                         )
                     )
@@ -76,18 +76,14 @@ struct HomeView: View {
                     Label("Start Game", systemImage: "play.circle.fill")
                         .font(.headline)
                 }
-                .disabled(players.count < 2 || resolvedRounds == nil)
+                .disabled(store.activePlayers.count < 2 || resolvedRounds == nil)
+
             } footer: {
-                if players.count < 2 {
-                    Text("Add at least 2 players to start.")
+                if store.activePlayers.count < 2 {
+                    Text("Select at least 2 players to start.")
                 }
             }
         }
         .navigationTitle("5 Second Rule")
-        .onAppear {
-            if players.isEmpty {
-                players = store.savedPlayers
-            }
-        }
     }
 }
