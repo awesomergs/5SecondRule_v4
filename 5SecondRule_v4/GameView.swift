@@ -8,6 +8,9 @@ struct GameView: View {
     @State private var timeLeft: Int = 5
     @State private var isRunning: Bool = false
     @State private var showTimeUp: Bool = false
+    
+    @Environment(\.dismiss) private var dismiss
+
 
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
@@ -78,7 +81,6 @@ struct GameView: View {
                 .background(.thinMaterial)
                 .clipShape(RoundedRectangle(cornerRadius: 20))
             } else {
-                // If you run out of prompts before rounds end: (for testing rn)
                 VStack(spacing: 10) {
                     Text("Out of prompts!")
                         .font(.title2)
@@ -116,8 +118,8 @@ struct GameView: View {
             }
             .padding(.top, 6)
 
-            NavigationLink("Back to Home Screen") {
-                DecksView().environmentObject(store)
+            Button("Back to Home Screen") {
+                dismiss()
             }
             .buttonStyle(.borderedProminent)
             .padding(.top, 6)
