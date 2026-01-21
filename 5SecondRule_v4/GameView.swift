@@ -1,5 +1,7 @@
 import SwiftUI
 import Combine
+import UIKit
+
 
 struct GameView: View {
     @EnvironmentObject private var store: AppStore
@@ -75,6 +77,13 @@ struct GameView: View {
                         .font(.title2)
                         .fontWeight(.semibold)
                         .multilineTextAlignment(.center)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(.thinMaterial)
+                        .clipShape(RoundedRectangle(cornerRadius: 20))
+                        .shadow(color: .black.opacity(0.15), radius: 10, y: 6)
+                        .transition(.scale.combined(with: .opacity))
+                        .animation(.spring(), value: state.currentQuestionIndex)
                 }
                 .frame(maxWidth: .infinity)
                 .padding()
@@ -140,6 +149,14 @@ struct GameView: View {
             Text("\(timeLeft)")
                 .font(.system(size: 64, weight: .bold, design: .rounded))
                 .monospacedDigit()
+                .foregroundStyle(
+                    timeLeft <= 1 ? .red :
+                    timeLeft <= 3 ? .orange :
+                    .primary
+                )
+                .scaleEffect(timeLeft <= 2 ? 1.1 : 1.0)
+                .animation(.easeInOut(duration: 0.2), value: timeLeft)
+
 
             Button {
                 toggleTimer()
@@ -203,16 +220,26 @@ struct GameView: View {
 
     private func tick() {
         timeLeft -= 1
+
+        if timeLeft <= 3 && timeLeft > 0 {
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        }
+
         if timeLeft <= 0 {
             timeLeft = 0
             isRunning = false
+            UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
             showTimeUp = true
         }
     }
 
+
     private func mark(correct: Bool) {
         if correct {
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
             state.addPointToCurrentPlayer()
+        } else {
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
         }
     }
 

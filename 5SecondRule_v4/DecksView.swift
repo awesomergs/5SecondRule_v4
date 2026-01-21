@@ -10,17 +10,26 @@ struct DecksView: View {
                 ForEach($store.decks) { $deck in
                     HStack(spacing: 12) {
                         Text(deck.emoji).font(.title2)
+
                         VStack(alignment: .leading, spacing: 2) {
                             Text(deck.title).font(.headline)
                             Text("\(deck.questions.count) prompts")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
+
                         Spacer()
+
                         Toggle("", isOn: $deck.isEnabled)
                             .labelsHidden()
                     }
-                    .padding(.vertical, 4)
+                    .padding()
+                    .background(
+                        deck.isEnabled
+                        ? Color.primary.opacity(0.06)
+                        : Color.clear
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
                 }
             }
 
