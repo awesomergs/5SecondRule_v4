@@ -11,6 +11,7 @@ struct GameView: View {
     @State private var isRunning: Bool = false
     @State private var showTimeUp: Bool = false
     
+    
     @Environment(\.dismiss) private var dismiss
 
 
@@ -22,20 +23,24 @@ struct GameView: View {
 
     var body: some View {
         VStack(spacing: 18) {
-            header
+
+            if !state.isGameOver {
+                header
+                    .transition(.opacity)
+            }
 
             Spacer(minLength: 0)
 
             questionCard
 
-            timerRow
-
-            actionButtons
+            if !state.isGameOver {
+                timerRow
+                actionButtons
+            }
 
             Spacer(minLength: 0)
-
-//            nextTurnRow
         }
+        .animation(.easeInOut(duration: 0.25), value: state.isGameOver)
         .padding()
         .navigationTitle("Game")
         .navigationBarTitleDisplayMode(.inline)
@@ -48,19 +53,33 @@ struct GameView: View {
         } message: {
             Text("Mark Correct or Pass, then go next.")
         }
+        
     }
 
     private var header: some View {
-        VStack(spacing: 6) {
+        VStack(spacing: 10) {
             Text("Current Player")
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
-            Text(state.currentPlayer)
-                .font(.largeTitle)
-                .fontWeight(.bold)
+            if let profile = currentPlayerProfile {
+                VStack(spacing: 6) {
+                    avatarView(for: profile)
+
+                    Text(profile.name)
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                }
+                .animation(.spring(response: 0.4, dampingFraction: 0.7), value: state.currentPlayerIndex)
+                .transition(.scale.combined(with: .opacity))
+            } else {
+                Text(state.currentPlayer)
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+            }
         }
     }
+
     
 
     private var questionCard: some View {
@@ -101,12 +120,47 @@ struct GameView: View {
         }
     }
     
-    private var gameOverCard: some View {
-        VStack(spacing: 12) {
-            Text("Game Over")
-                .font(.title)
-                .fontWeight(.bold)
+    private var winningPlayers: [String] {
+        let maxScore = state.scores.values.max() ?? 0
+        return state.players.filter {
+            state.scores[$0, default: 0] == maxScore
+        }
+    }
 
+    private func profile(for playerName: String) -> PlayerProfile? {
+        store.playerProfiles.first { $0.name == playerName }
+    }
+
+    
+    private var gameOverCard: some View {
+        VStack(spacing: 16) {
+
+            // MARK: - Winner Section
+            VStack {
+                if winningPlayers.count == 1,
+                   let winner = winningPlayers.first {
+
+                    winnerHeader(for: winner)
+
+                } else {
+                    VStack(spacing: 6) {
+                        Text("It’s a Tie!")
+                            .font(.title2)
+                            .fontWeight(.bold)
+
+                        Text(winningPlayers.joined(separator: ", "))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+            .animation(
+                .spring(response: 0.5, dampingFraction: 0.7),
+                value: winningPlayers
+            )
+
+            Divider()
+
+            // MARK: - Scoreboard (your existing logic)
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(
                     state.players.sorted {
@@ -125,7 +179,6 @@ struct GameView: View {
                     }
                 }
             }
-            .padding(.top, 6)
 
             Button("Back to Home Screen") {
                 dismiss()
@@ -138,6 +191,56 @@ struct GameView: View {
         .background(.thinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 20))
     }
+    
+    @ViewBuilder
+    private func winnerHeader(for playerName: String) -> some View {
+        let profile = profile(for: playerName)
+
+        VStack(spacing: 6) {
+            ZStack(alignment: .top) {
+
+                // Crown
+                Image(systemName: "crown.fill")
+                    .foregroundStyle(.yellow)
+                    .font(.title)
+                    .offset(y: -18)
+
+                // Avatar
+                if let data = profile?.imageData,
+                   let uiImage = UIImage(data: data) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 80, height: 80)
+                        .clipShape(Circle())
+                        .overlay(
+                            Circle()
+                                .stroke(.yellow, lineWidth: 3)
+                        )
+                        .shadow(radius: 6)
+                } else {
+                    Circle()
+                        .fill(.gray.opacity(0.3))
+                        .frame(width: 80, height: 80)
+                        .overlay {
+                            Text(String(playerName.prefix(1)))
+                                .font(.largeTitle)
+                                .fontWeight(.bold)
+                        }
+                }
+            }
+
+            Text(playerName)
+                .font(.title2)
+                .fontWeight(.bold)
+
+            Text("Winner")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+
 
     private var gameplayDisabled: Bool {
         state.isGameOver || state.currentQuestion == nil
@@ -255,5 +358,39 @@ struct GameView: View {
             timeLeft = 5
         }
     }
+    
+    private var currentPlayerProfile: PlayerProfile? {
+        store.playerProfiles.first {
+            $0.name == state.currentPlayer
+        }
+    }
+    
+    @ViewBuilder
+    private func avatarView(for profile: PlayerProfile) -> some View {
+        if let data = profile.imageData,
+           let uiImage = UIImage(data: data) {
+            Image(uiImage: uiImage)
+                .resizable()
+                .scaledToFill()
+                .frame(width: 72, height: 72)
+                .clipShape(Circle())
+                .overlay(
+                    Circle()
+                        .stroke(.primary.opacity(0.2), lineWidth: 2)
+                )
+                .shadow(radius: 4)
+        } else {
+            Circle()
+                .fill(.gray.opacity(0.3))
+                .frame(width: 72, height: 72)
+                .overlay {
+                    Text(String(profile.name.prefix(1)))
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                }
+        }
+    }
+
+
 
 }

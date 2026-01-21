@@ -14,13 +14,15 @@ final class AppStore: ObservableObject {
     
     @Published var playerProfiles: [PlayerProfile] = []
     @Published var activePlayers: [PlayerProfile] = []
-
+    
     private let profilesKey = "player_profiles_v1"
+    private let activePlayersKey = "active_player_ids_v1"
 
 
     init() {
         loadLeaderboard()
-        loadPlayers()
+        loadPlayerProfiles()
+        loadActivePlayers()
     }
 
     func startNewGame(players: [String], roundsPerPlayer: Int) -> GameState {
@@ -104,27 +106,71 @@ final class AppStore: ObservableObject {
     
     func addProfile(_ profile: PlayerProfile) {
         playerProfiles.append(profile)
-        saveProfiles()
+        savePlayerProfiles()
     }
+
 
     func removeProfile(_ profile: PlayerProfile) {
         playerProfiles.removeAll { $0.id == profile.id }
         activePlayers.removeAll { $0.id == profile.id }
-        saveProfiles()
+
+        savePlayerProfiles()
+        saveActivePlayers()
     }
+
 
     
     func activatePlayer(_ profile: PlayerProfile) {
         guard !activePlayers.contains(profile) else { return }
         activePlayers.append(profile)
+        saveActivePlayers()
     }
+
 
     func deactivatePlayer(_ profile: PlayerProfile) {
         activePlayers.removeAll { $0.id == profile.id }
+        saveActivePlayers()
     }
+
 
     func clearActivePlayers() {
         activePlayers.removeAll()
+        saveActivePlayers()
     }
+
+    
+    private func savePlayerProfiles() {
+        if let data = try? JSONEncoder().encode(playerProfiles) {
+            UserDefaults.standard.set(data, forKey: profilesKey)
+        }
+    }
+
+    private func loadPlayerProfiles() {
+        guard
+            let data = UserDefaults.standard.data(forKey: profilesKey),
+            let decoded = try? JSONDecoder().decode([PlayerProfile].self, from: data)
+        else { return }
+
+        playerProfiles = decoded
+    }
+    
+    private func saveActivePlayers() {
+        let ids = activePlayers.map { $0.id.uuidString }
+        UserDefaults.standard.set(ids, forKey: activePlayersKey)
+    }
+
+    private func loadActivePlayers() {
+        guard let storedIDs = UserDefaults.standard.stringArray(forKey: activePlayersKey) else {
+            return
+        }
+
+        let idSet = Set(storedIDs)
+
+        activePlayers = playerProfiles.filter {
+            idSet.contains($0.id.uuidString)
+        }
+    }
+
+
 
 }
