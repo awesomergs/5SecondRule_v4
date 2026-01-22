@@ -4,60 +4,26 @@ import Combine
 struct DecksView: View {
     @EnvironmentObject private var store: AppStore
 
+    private let columns = [
+        GridItem(.adaptive(minimum: 160), spacing: 16)
+    ]
+
     var body: some View {
-        List {
-            Section("Decks in Rotation") {
+        ScrollView {
+            VStack(spacing: 24) {
                 ForEach($store.decks) { $deck in
-                    HStack(spacing: 12) {
-                        Text(deck.emoji).font(.title2)
-
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(deck.title).font(.headline)
-                            Text("\(deck.questions.count) prompts")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                    DeckCardView(deck: deck)
+                        .scaleEffect(deck.isEnabled ? 1.0 : 0.985)
+                        .animation(.easeInOut(duration: 0.15), value: deck.isEnabled)
+                        .onTapGesture {
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            deck.isEnabled.toggle()
                         }
-
-                        Spacer()
-
-                        Toggle("", isOn: $deck.isEnabled)
-                            .labelsHidden()
-                    }
-                    .padding()
-                    .background(
-                        deck.isEnabled
-                        ? Color.primary.opacity(0.06)
-                        : Color.clear
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
                 }
             }
-
-//            Section {
-//                NavigationLink {
-//                    NewGameView()
-//                        .environmentObject(store)
-//                } label: {
-//                    HStack {
-//                        Image(systemName: "play.circle.fill")
-//                        Text("Start New Game")
-//                    }
-//                    .font(.headline)
-//                }
-//                .disabled(store.decks.allSatisfy { !$0.isEnabled })
-//            } footer: {
-//                if store.decks.allSatisfy({ !$0.isEnabled }) {
-//                    Text("Turn on at least one deck to start a game.")
-//                }
-//            }
-
-//            Section("Leaderboard") {
-//                NavigationLink("View Leaderboard") {
-//                    LeaderboardView()
-//                        .environmentObject(store)
-//                }
-//            }
+            .padding(.horizontal)
+            .padding(.vertical, 16)
         }
-        .navigationTitle("5 Second Rule")
+        .navigationTitle("Decks")
     }
 }

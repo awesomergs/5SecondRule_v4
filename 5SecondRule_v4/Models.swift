@@ -7,14 +7,25 @@ struct Deck: Identifiable, Codable {
     var isEnabled: Bool
     let questions: [Question]
 
-    init(id: UUID = UUID(), title: String, emoji: String, isEnabled: Bool = true, questions: [Question]) {
+    let imageKey: String?   // optional
+
+    init(
+        id: UUID = UUID(),
+        title: String,
+        emoji: String,
+        isEnabled: Bool = true,
+        imageKey: String? = nil,
+        questions: [Question]
+    ) {
         self.id = id
         self.title = title
         self.emoji = emoji
         self.isEnabled = isEnabled
+        self.imageKey = imageKey
         self.questions = questions
     }
 }
+
 
 struct Question: Identifiable, Codable {
     let id: UUID
@@ -79,6 +90,7 @@ extension Deck {
             title: "Base Deck",
             emoji: "🧠",
             isEnabled: true,
+            imageKey: "deck_base",
             questions: [
                 Question(prompt: "Name 3 colors"),
                 Question(prompt: "Name 3 fruits"),
@@ -202,6 +214,7 @@ extension Deck {
             title: "Pop Culture Lite",
             emoji: "🎬",
             isEnabled: true,
+            imageKey: "deck_popculture",
             questions: [
                 Question(prompt: "Name 3 movie genres"),
                 Question(prompt: "Name 3 TV show genres"),
@@ -242,6 +255,7 @@ extension Deck {
             title: "Geography Lite",
             emoji: "🌍",
             isEnabled: true,
+            imageKey: "deck_geography",
             questions: [
                 Question(prompt: "Name 3 continents"),
                 Question(prompt: "Name 3 oceans or seas"),
@@ -278,6 +292,7 @@ extension Deck {
             title: "USC-Specific",
             emoji: "✌️",
             isEnabled: false,
+            imageKey: "deck_usc",
             questions: [
                 Question(prompt: "Name 3 buildings on USC’s campus"),
                 Question(prompt: "Name 3 places to study on campus"),
